@@ -16,9 +16,18 @@
 // walker, and state can be used to give this walked an initial
 // state.
 
+/**
+ * @param node ast parse
+ * @param visitors
+ * @param baseVisitor
+ * @param state
+ * @param override
+ */
 export function simple(node, visitors, baseVisitor, state, override) {
-  if (!baseVisitor) baseVisitor = base
-  ;(function c(node, st, override) {
+  if (!baseVisitor) baseVisitor = base;
+  // 立即执行函数
+  (function c(node, st, override) {
+    debugger
     let type = override || node.type, found = visitors[type]
     baseVisitor[type](node, st, c)
     if (found) found(node, st)
@@ -108,11 +117,11 @@ export function findNodeAt(node, start, end, test, baseVisitor, state) {
     (function c(node, st, override) {
       let type = override || node.type
       if ((start == null || node.start <= start) &&
-          (end == null || node.end >= end))
+        (end == null || node.end >= end))
         baseVisitor[type](node, st, c)
       if ((start == null || node.start === start) &&
-          (end == null || node.end === end) &&
-          test(type, node))
+        (end == null || node.end === end) &&
+        test(type, node))
         throw new Found(node, st)
     })(node, state)
   } catch (e) {
@@ -188,9 +197,10 @@ export const base = {}
 
 base.Program = base.BlockStatement = base.StaticBlock = (node, st, c) => {
   for (let stmt of node.body)
-    c(stmt, st, "Statement")
+    // 传入函数用于递归
+    c(stmt, st, "Statement") // todo: 什么时候 override 传递为 "statement"
 }
-base.Statement = skipThrough
+base.Statement = skipThrough // 传递statement时，会跳过当前进入下一节点
 base.EmptyStatement = ignore
 base.ExpressionStatement = base.ParenthesizedExpression = base.ChainExpression =
   (node, st, c) => c(node.expression, st, "Expression")
@@ -254,12 +264,16 @@ base.ForInit = (node, st, c) => {
 base.DebuggerStatement = ignore
 
 base.FunctionDeclaration = (node, st, c) => c(node, st, "Function")
-base.VariableDeclaration = (node, st, c) => {
+base.VariableDeclaration = (node, st, c) => { // 变量声明
+                                              // 一个关键字下声明了几个变量，declarations 下的类型就是 VariableDeclarator
+                                              // 比如 let a = 10, b = 20
+                                              // 就是在 declarations:[VariableDeclarator, VariableDeclarator]
   for (let decl of node.declarations)
     c(decl, st)
 }
 base.VariableDeclarator = (node, st, c) => {
   c(node.id, st, "Pattern")
+  // 该变量是否初始化
   if (node.init) c(node.init, st, "Expression")
 }
 
@@ -271,14 +285,14 @@ base.Function = (node, st, c) => {
 }
 
 base.Pattern = (node, st, c) => {
-  if (node.type === "Identifier")
-    c(node, st, "VariablePattern")
+  if (node.type === "Identifier") // todo:识别器？
+    c(node, st, "VariablePattern") // todo: 变量模式？
   else if (node.type === "MemberExpression")
     c(node, st, "MemberPattern")
   else
     c(node, st)
 }
-base.VariablePattern = ignore
+base.VariablePattern = ignore // 忽略掉
 base.MemberPattern = skipThrough
 base.RestElement = (node, st, c) => c(node.argument, st, "Pattern")
 base.ArrayPattern = (node, st, c) => {
@@ -297,7 +311,7 @@ base.ObjectPattern = (node, st, c) => {
   }
 }
 
-base.Expression = skipThrough
+base.Expression = skipThrough // 表达式，跳过当前进入下一个
 base.ThisExpression = base.Super = base.MetaProperty = ignore
 base.ArrayExpression = (node, st, c) => {
   for (let elt of node.elements) {
