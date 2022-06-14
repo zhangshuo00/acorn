@@ -27,7 +27,7 @@ export function simple(node, visitors, baseVisitor, state, override) {
   if (!baseVisitor) baseVisitor = base;
   // 立即执行函数
   (function c(node, st, override) {
-    debugger
+    // eslint-disable-next-line no-debugger
     let type = override || node.type, found = visitors[type]
     baseVisitor[type](node, st, c)
     if (found) found(node, st)
@@ -79,7 +79,8 @@ class Found {
 export function full(node, callback, baseVisitor, state, override) {
   if (!baseVisitor) baseVisitor = base
   let last
-  ;(function c(node, st, override) {
+  // eslint-disable-next-line no-debugger
+  (function c(node, st, override) {
     let type = override || node.type
     baseVisitor[type](node, st, c)
     if (last !== node) {
@@ -265,9 +266,9 @@ base.DebuggerStatement = ignore
 
 base.FunctionDeclaration = (node, st, c) => c(node, st, "Function")
 base.VariableDeclaration = (node, st, c) => { // 变量声明
-                                              // 一个关键字下声明了几个变量，declarations 下的类型就是 VariableDeclarator
-                                              // 比如 let a = 10, b = 20
-                                              // 就是在 declarations:[VariableDeclarator, VariableDeclarator]
+  // 一个关键字下声明了几个变量，declarations 下的类型就是 VariableDeclarator
+  // 比如 let a = 10, b = 20
+  // 就是在 declarations:[VariableDeclarator, VariableDeclarator]
   for (let decl of node.declarations)
     c(decl, st)
 }

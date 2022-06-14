@@ -71,7 +71,7 @@ export const defaultOptions = {
   onComment: null,
   // Nodes have their start and end characters offsets recorded in
   // `start` and `end` properties (directly on the node, rather than
-  // the `loc` object, which holds line/column data. To also add a
+  // the `loc` object, which holds line/column data). To also add a
   // [semi-standardized][range] `range` property holding a `[start,
   // end]` array with the same numbers, set the `ranges` option to
   // `true`.
@@ -102,12 +102,14 @@ let warnedAboutEcmaVersion = false
 export function getOptions(opts) {
   let options = {}
 
+  // 判断opts中是否有该属性，如果有，则使用opts中的属性，否则使用默认值
+  // 并将所有属性归集到options中
   for (let opt in defaultOptions)
     options[opt] = opts && hasOwn(opts, opt) ? opts[opt] : defaultOptions[opt]
 
   if (options.ecmaVersion === "latest") {
     options.ecmaVersion = 1e8
-  } else if (options.ecmaVersion == null) {
+  } else if (options.ecmaVersion == null) { // 不传入ecmaVersion, 设置为 11，并警告
     if (!warnedAboutEcmaVersion && typeof console === "object" && console.warn) {
       warnedAboutEcmaVersion = true
       console.warn("Since Acorn 8.0.0, options.ecmaVersion is required.\nDefaulting to 2020, but this will stop working in the future.")

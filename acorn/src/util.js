@@ -1,5 +1,6 @@
 const {hasOwnProperty, toString} = Object.prototype
 
+// 返回 obj 对象中是否包含属性 propName
 export const hasOwn = Object.hasOwn || ((obj, propName) => (
   hasOwnProperty.call(obj, propName)
 ))
